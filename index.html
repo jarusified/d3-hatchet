@@ -1,0 +1,47 @@
+<html>
+
+<head>
+    <title>
+        d3-hatchet
+    </title>
+    
+    <script src="thirdParty/socket.io.js"></script>
+    <script src="thirdParty/d3.min.js"></script>
+    <script>
+        var socket = io('http://localhost:5000');
+        
+        socket.on('connect', function () { 
+            console.log("Sockets working!")
+        });
+        
+        socket.on('load_dataset', function (data) { 
+            if(data == true){
+                console.log("Dataset has been loaded") 
+
+                // There are better ways to do this!
+                socket.emit('get_graph_request', {
+                    
+                })
+            }
+            else{
+                console.log("Some issue in loading the dataset") 
+            }
+        });
+
+        socket.on('disconnect', function () { 
+            console.log("Socket disconnected")
+        });
+
+        // dataset we would like to load. 
+        let dataset_name = 'hpctoolkit-cpi-database'
+        socket.emit('load_dataset_request', {
+            'dataset_name': dataset_name
+        })
+    </script>
+</head>
+
+<body>
+    <svg id="main_view"></svg>
+</body>
+
+</html>
