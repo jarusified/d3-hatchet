@@ -13,23 +13,9 @@ class CallGraph(nx.Graph):
         self.df = self.gf.dataframe
         self.g = nx.Graph()
         self.g = self.path_to_graph()
-        
-        # self.add_paths('path')
+       
         # self.add_node_attributes()
         # self.add_edge_attributes()
-
-    def no_cycle_path(self, path):
-        ret = []
-        mapper = {}
-        for idx, elem in enumerate(path):
-            if elem not in mapper:
-                mapper[elem] = 1
-                ret.append(elem)
-            else:
-                ret.append(elem + "/" + str(mapper[elem]))
-                mapper[elem] += 1
-        return tuple(ret)
-
     
     def path_to_graph(self):
         ret = []
@@ -53,7 +39,6 @@ class CallGraph(nx.Graph):
         return cycle_free_graph
 
     def generic_cycle_break(self, graph):
-        # print(nx.find_cycle(graph, orientation="original"))
         ret = nx.DiGraph()
         connected_components = nx.connected_component_subgraphs(graph, copy=False)
         
@@ -100,17 +85,16 @@ class CallGraph(nx.Graph):
         ret = {}
         for node in nodes:
             if attr == 'time (inc)':
-                group_df = self.df.groupby([groupby]).max()
-                # log.info("Group df by {0} = \n {1}".format(groupby, group_df))
-                ret[node] = group_df.loc[corrected_node, 'time (inc)']
+                group_df = self.df.groupby(['name']).max()
+                ret[node] = group_df.loc[node, 'time (inc)']
             
             elif attr == 'time':
-                module_df = self.df.loc[self.df['module'] == corrected_node]
+                module_df = self.df.loc[self.df['name'] == node]
                 if self.group_by == 'module':
                     group_df = self.df.groupby([groupby]).max()
                 elif self.group_by == 'name':
                     group_df = self.df.groupby([groupby]).mean()
-                ret[node] = group_df.loc[corrected_node, 'time']
+                ret[node] = group_df.loc[node, 'time']
                     
             elif attr == 'nid':
                 ret[node] = self.df.loc[self.df['name'] == corrected_function]['nid'].tolist()
