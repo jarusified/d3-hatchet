@@ -7,6 +7,7 @@
     
     <script src="thirdParty/socket.io.js"></script>
     <script src="thirdParty/d3.min.js"></script>
+    <script src="collapsible_CCT.js"></script>
     <script>
         var socket = io('http://localhost:5000');
         
@@ -30,6 +31,11 @@
 
         socket.on('disconnect', function () { 
             console.log("Socket disconnected")
+        });
+
+        socket.on('get_graph', function (data) { 
+            console.log(data)
+            collapsibleCCT(data)
         });
 
         // dataset we would like to load. 

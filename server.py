@@ -1,15 +1,3 @@
-##############################################################################
-# Copyright (c) 2018-2019, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# This file is part of Callflow.
-# Created by Suraj Kesavan <kesavan1@llnl.gov>.
-# LLNL-CODE-741008. All rights reserved.
-#
-# For details, see: https://github.com/LLNL/Callflow
-# Please also read the LICENSE file for the MIT License notice.
-##############################################################################
-
 # Library imports
 from flask import Flask, jsonify, render_template, send_from_directory, current_app, request
 from flask_socketio import SocketIO, emit, send
@@ -54,7 +42,7 @@ class App():
             g = self.callflow.update({
                 'name': 'get_graph'
             })
-            result = json_graph.node_link_data(g)
+            result = json_graph.tree_data(g, '<program root>')
             emit('get_graph', result, json=True)
 
 if __name__ == '__main__':

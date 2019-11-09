@@ -3,6 +3,7 @@ import networkx as nx
 import math
 import json
 from ast import literal_eval as make_tuple
+from networkx.readwrite import json_graph
 
 class CallGraph(nx.Graph):
     def __init__(self, gf):
@@ -10,8 +11,8 @@ class CallGraph(nx.Graph):
         self.gf = gf
         self.graph = self.gf.graph
         self.df = self.gf.dataframe
-        self.g = nx.DiGraph()
-        self.add_path_from_graph()
+        self.g = nx.Graph()
+        self.g = self.path_to_graph()
         
         # self.add_paths('path')
         # self.add_node_attributes()
@@ -28,9 +29,41 @@ class CallGraph(nx.Graph):
                 ret.append(elem + "/" + str(mapper[elem]))
                 mapper[elem] += 1
         return tuple(ret)
+
     
-    def add_path_from_graph(self):
-        print(self.gf.tree())
+    def path_to_graph(self):
+        ret = []
+        stack = []
+        for root in self.graph.roots:
+            stack.append(root)
+        while len(stack) != 0:
+            node = stack.pop()
+            for child in node.children:
+                # Some weird frame has no name, so ommitting it.
+                if 'name' in child.frame.attrs.keys():
+                    # self.g.add_edge(node.frame, child.frame)
+                    self.g.add_edge(node.frame.attrs['name'], child.frame.attrs['name'])
+                # If statements do not have a "name".
+                else:
+                    # self.g.add_edge(node.frame, child.frame)
+                    self.g.add_edge(node.frame.attrs['name'], child.frame.attrs['file'])
+                stack.append(child)
+        # print(self.g.number_of_nodes(), self.g.number_of_edges())
+        cycle_free_graph = self.generic_cycle_break(self.g)
+        return cycle_free_graph
+
+    def generic_cycle_break(self, graph):
+        # print(nx.find_cycle(graph, orientation="original"))
+        ret = nx.DiGraph()
+        connected_components = nx.connected_component_subgraphs(graph, copy=False)
+        
+        for component in connected_components:
+            T = nx.minimum_spanning_tree(component)
+            ret.add_edges_from(T.edges())
+            ret.add_nodes_from(T.nodes())
+        
+        return ret
+
 
     # This is just one way to load edges into networkX graph. Alternatively, one
     # can do a dfs or bfs on the graph to get the edges.
